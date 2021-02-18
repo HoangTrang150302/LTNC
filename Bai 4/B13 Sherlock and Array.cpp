@@ -35,35 +35,22 @@ int main()
 
 bool check(int *a, int n)
 {
-	for(int i = 0; i < n; i++)
+	int sum = 0;
+	for (int i = 0; i < n; i++)
 	{
-		long long sum_left = 0;
-		long long sum_right = 0;
-		
-		if(i == 0) sum_left = 0;
-		else
-		{
-			for (int j = i - 1; j >= 0; j--)
-			{
-				sum_left += a[j];
-			}
-		}
-		
-		if(i == n - 1) sum_right = 0;
-		else
-		{
-			for (int j = i + 1; j < n; j++)
-			{
-				sum_right += a[j];
-			}
-		}
-		
-		if(sum_left == sum_right)
+		sum += a[i];
+	}
+	
+	int count = a[0];
+	if(sum == count) return true;
+	for(int i = 1; i < n; i++)
+	{
+		if(sum - a[i] - count == count)
 		{
 			return true;
 		}
+		count += a[i];	
 	}
 	return false;
 }
-
 
