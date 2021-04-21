@@ -12,7 +12,6 @@ using namespace std;
 //Screen dimension constants
 const int SCREEN_WIDTH = 596;
 const int SCREEN_HEIGHT = 762;
-const string WINDOW_TITLE = "2048_Game";
 
 //Background coordinate
 const int START_ROW = 35;
@@ -40,59 +39,60 @@ struct BOARD
 const int dir_Row[4] = {0,0,-1,1}; //left:0 - right:1 - up:2 - down:3
 const int dir_Col[4] = {-1,1,0,0}; //left:0 - right:1 - up:2 - down:3
 
+SDL_Surface* surface[TEXTURE_NUM]; //the surface for image
+SDL_Texture* texture[TEXTURE_NUM]; //the texture for image
+
+//The window we'll be rendering to
+SDL_Window* window = NULL;
+
+//The window renderer
+SDL_Renderer* renderer = NULL;
+
+BOARD board[NUM][NUM];
+
 //FUNCTION PROTOTYPE
 
 //Starts up SDL and creates window
-void init(SDL_Window* &window, SDL_Renderer* &renderer, SDL_Texture* texture[18]);
+void init();
 
 //Start a new game
-void new_game(BOARD board[NUM][NUM], bool &win_check, int &score, SDL_Renderer* &renderer, SDL_Texture* texture[TEXTURE_NUM], TTF_Font* font, SDL_Color color, int high_score);
-
-//Board index to background coordinate
-int get_index_row(int x);
-int get_index_col(int y);
-
-//Random number position
-INDEX random_position(BOARD board[NUM][NUM]);
+void new_game(bool &win_check, int &score, int &high_score);
 
 //Convert keyboard event to dirRow, dirCol index number
 int move_event(SDL_Event &e);
 
 //Print the number on the board
-void print_board(BOARD board[NUM][NUM], int& score, SDL_Renderer* &renderer, SDL_Texture* texture[TEXTURE_NUM], TTF_Font* font, SDL_Color color, int high_score);
+void print_board(int& score, int &high_score);
 
 //Check whether the index inside the board or not
 bool inside(int);
 
 //Postion to number on the board
-void index_to_num(BOARD board[NUM][NUM]);
+void generate_new_number();
 
 //Move number
-void move_num(SDL_Event &e, BOARD board[NUM][NUM], int& score, SDL_Renderer* &renderer, SDL_Texture* texture[TEXTURE_NUM], TTF_Font* font, SDL_Color color, int high_score);
+void move_num(SDL_Event &e, int& score, int& high_score);
 
 //Print image corresponding to number
-void print_number(int n, int x, int y, SDL_Texture* texture[TEXTURE_NUM], SDL_Renderer* &renderer);
+void print_number(int n, int x, int y) ;
 
 //Reset the board.done to false
-void reset_false(BOARD board[NUM][NUM]);
-
-//Check if all the board contain value
-bool full_board(BOARD board[NUM][NUM]);
+void reset_false();
 
 //Check if the player get to 2048 title
-bool win(BOARD board[NUM][NUM]);
+bool win();
 
 //Check if the player lose or not
-bool lose(BOARD board[NUM][NUM]);
-bool check_move_lose(BOARD board[NUM][NUM]);
-bool equal_num(const int &i,const int &j, BOARD board[NUM][NUM]);
+bool lose();
 
-//Random new number 2 or 4
-int random_new_number();
+void close();
+void print_score(int& score, int x, int y);
 
-void close(SDL_Renderer*&, SDL_Window*&);
-void waitUntilKeyPressed();
-void print_score(int& score, int x, int y, SDL_Renderer* &renderer, TTF_Font* font, SDL_Color color);
+void loadMedia(int ob,int x,int y)
+{
+	SDL_Rect dest = {x, y,surface[ob]->w,surface[ob]->h};
+    SDL_RenderCopy(renderer, texture[ob], NULL, &dest);
+}
 
 int main(int argc, char* argv[])
 {
@@ -101,29 +101,18 @@ int main(int argc, char* argv[])
     bool win_check = false; //the player could only win once
     bool quit = false; //quit game
 
-    //The 4x4 board
-    BOARD board[NUM][NUM];
-
-    //SDL Variable
-    SDL_Window* window; //The window will be render to
-    SDL_Renderer* renderer; // renderer
-    SDL_Texture* texture[TEXTURE_NUM]; //the texture for image
     SDL_Event e; //event
 
     //INIT Window
-	init(window, renderer, texture);
+	init();
 
-    //INPUT FILE
+    //INPUT FILE HIGH SCORE
     ifstream high_score_file;
     high_score_file.open("high_score.txt");
     int high_score; //high score
     high_score_file >> high_score;
     cout << "HIGH SCORE: " << high_score << endl;
     high_score_file.close();
-
-	//True Type Font
-    TTF_Font *font = TTF_OpenFont("Roboto-Thin.ttf", 10);
-    SDL_Color color = {255, 255, 255, 255};
 
 	srand(time(0));
 
@@ -133,19 +122,18 @@ int main(int argc, char* argv[])
     {
         while(SDL_PollEvent(&e))
         {
-            SDL_RenderCopy(renderer,texture[18],NULL,NULL); //print the startmenu
-            //SDL_RenderPresent(renderer);
-            SDL_Rect newgamerect = {120, 450, 364, 90};
-            SDL_RenderCopy(renderer,texture[20],NULL,&newgamerect); //new game black
+            loadMedia(18, 0, 0); //print the startmenu
+            SDL_RenderPresent(renderer);
+            loadMedia(20, 120, 450); //new game black
             if(e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN)
             {
                 if(!(e.button.x >= 120 && e.button.x <= 120+364 && e.button.y >= 450 && e.button.y <= 450+90))
                 {
-                    SDL_RenderCopy(renderer,texture[20],NULL,&newgamerect); //new game black
+                     loadMedia(20, 120, 450); //new game black
                 }
                 else
                 {
-                    SDL_RenderCopy(renderer,texture[21],NULL,&newgamerect); // new game red
+                    loadMedia(21, 120, 450); // new game red
                     if(e.type == SDL_MOUSEBUTTONDOWN)
                     {
                         cout << "mouse button down\n";
@@ -161,27 +149,26 @@ int main(int argc, char* argv[])
     }
 
 	//Start a new game
-    new_game(board, win_check, score, renderer, texture, font, color, high_score);
-
+    new_game(win_check, score, high_score);
     //GAME LOOP
     while(!quit)
     {
         SDL_RenderPresent(renderer);
-        if(win(board) && !win_check)
+        if(win() && !win_check)
         {
             cout << "YOU WIN\n";
             win_check = true;
             cout << "Press ESC to quit, press N to start a new game, press arrow key to keep playing\n";
             if(e.type == SDL_KEYDOWN)
             {
-                    if(e.key.keysym.sym == SDLK_ESCAPE)
-                    {
-                        quit = true;
-                    }
-                    else if(e.key.keysym.sym == SDLK_n)
-                    {
-                        new_game(board, win_check, score, renderer, texture, font, color, high_score);
-                    }
+                if(e.key.keysym.sym == SDLK_ESCAPE)
+                {
+                     quit = true;
+                }
+                else if(e.key.keysym.sym == SDLK_n)
+                {
+                     new_game(win_check, score, high_score);
+                }
             }
         }
         while(SDL_PollEvent(&e))
@@ -194,32 +181,32 @@ int main(int argc, char* argv[])
                 }
                 else if(e.key.keysym.sym == SDLK_n)
                 {
-                    new_game(board, win_check, score, renderer, texture, font, color, high_score);
+                    new_game(win_check, score, high_score);
                 }
                 else
                 {
                     if(move_event(e) >= 0)
                     {
-                        move_num(e, board, score, renderer, texture, font, color, high_score);
+                        move_num(e, score, high_score);
                         SDL_RenderPresent(renderer);
                     }
                 }
             }
         }
-        if(lose(board))
+        if(lose())
         {
             cout << "You lose\n";
-            if(score > high_score)
+            while(SDL_WaitEvent(&e))
             {
+                loadMedia(19, 0, 0); //print the startmenu
+
+                //OUTPUT HIGH SCORE
                 ofstream out_put_file;
                 out_put_file.open("high_score.txt", ofstream::trunc);
                 out_put_file << score;
                 out_put_file.close();
-            }
-            while(SDL_WaitEvent(&e))
-            {
-                SDL_RenderCopy(renderer,texture[19],NULL,NULL); //print the startmenu
                 SDL_RenderPresent(renderer);
+
                 if(e.type == SDL_KEYDOWN)
                 {
                     if(e.key.keysym.sym == SDLK_ESCAPE)
@@ -232,15 +219,15 @@ int main(int argc, char* argv[])
                     }
                 }
             }
-            new_game(board, win_check, score, renderer, texture, font, color, high_score);
+            new_game(win_check, score, high_score);
         }
     }
 	//Free resources and close SDL
-	close(renderer, window);
+	close();
 	return 0;
 }
 
-void init(SDL_Window* &window, SDL_Renderer* &renderer, SDL_Texture* texture[TEXTURE_NUM])
+void init()
 {
     //Initialize SDL
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -249,110 +236,140 @@ void init(SDL_Window* &window, SDL_Renderer* &renderer, SDL_Texture* texture[TEX
     if(TTF_Init() == -1) cout << "TTF_INIT error\n";
 
     //Create window
-    window = SDL_CreateWindow(WINDOW_TITLE.c_str(), SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("2048_Game", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
     //Create renderer for window
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     //Load texture
-	texture[0] = IMG_LoadTexture(renderer,"background.bmp");
-    texture[1] = IMG_LoadTexture(renderer,"2.bmp");
-    texture[2] = IMG_LoadTexture(renderer,"4.bmp");
-    texture[3] = IMG_LoadTexture(renderer,"8.bmp");
-    texture[4] = IMG_LoadTexture(renderer,"16.bmp");
-    texture[5] = IMG_LoadTexture(renderer,"32.bmp");
-    texture[6] = IMG_LoadTexture(renderer,"64.bmp");
-    texture[7] = IMG_LoadTexture(renderer,"128.bmp");
-    texture[8] = IMG_LoadTexture(renderer,"256.bmp");
-    texture[9] = IMG_LoadTexture(renderer,"512.bmp");
-    texture[10] = IMG_LoadTexture(renderer,"1024.bmp");
-    texture[11] = IMG_LoadTexture(renderer,"2048.bmp");
-    texture[12] = IMG_LoadTexture(renderer,"4096.bmp");
-    texture[13] = IMG_LoadTexture(renderer,"8192.bmp");
-    texture[14] = IMG_LoadTexture(renderer,"16384.bmp");
-    texture[15] = IMG_LoadTexture(renderer,"32768.bmp");
-    texture[16] = IMG_LoadTexture(renderer,"65536.bmp");
-    texture[17] = IMG_LoadTexture(renderer,"131072.bmp");
-    texture[18] = IMG_LoadTexture(renderer,"startmenu.bmp");
-    texture[19] = IMG_LoadTexture(renderer,"end_game.bmp");
-    texture[20] = IMG_LoadTexture(renderer,"newgame_black.bmp");
-    texture[21] = IMG_LoadTexture(renderer,"newgame_red.bmp");
+    surface[0] = SDL_LoadBMP("background.bmp");
+	texture[0] = SDL_CreateTextureFromSurface(renderer, surface[0]);
+
+    surface[1] = SDL_LoadBMP("2.bmp");
+    texture[1] = SDL_CreateTextureFromSurface(renderer, surface[1]);
+
+    surface[2] = SDL_LoadBMP("4.bmp");
+    texture[2] = SDL_CreateTextureFromSurface(renderer, surface[2]);
+
+    surface[3] = SDL_LoadBMP("8.bmp");
+    texture[3] = SDL_CreateTextureFromSurface(renderer, surface[3]);
+
+    surface[4] = SDL_LoadBMP("16.bmp");
+    texture[4] = SDL_CreateTextureFromSurface(renderer, surface[4]);
+
+    surface[5] = SDL_LoadBMP("32.bmp");
+    texture[5] = SDL_CreateTextureFromSurface(renderer, surface[5]);
+
+    surface[6] = SDL_LoadBMP("64.bmp");
+    texture[6] = SDL_CreateTextureFromSurface(renderer, surface[6]);
+
+    surface[7] = SDL_LoadBMP("128.bmp");
+    texture[7] = SDL_CreateTextureFromSurface(renderer, surface[7]);
+
+    surface[8] = SDL_LoadBMP("256.bmp");
+    texture[8] = SDL_CreateTextureFromSurface(renderer, surface[8]);
+
+    surface[9] = SDL_LoadBMP("512.bmp");
+    texture[9] = SDL_CreateTextureFromSurface(renderer, surface[9]);
+
+    surface[10] = SDL_LoadBMP("1024.bmp");
+    texture[10] = SDL_CreateTextureFromSurface(renderer, surface[10]);
+
+    surface[11] = SDL_LoadBMP("2048.bmp");
+    texture[11] = SDL_CreateTextureFromSurface(renderer, surface[11]);
+
+    surface[12] = SDL_LoadBMP("4096.bmp");
+    texture[12] = SDL_CreateTextureFromSurface(renderer, surface[12]);
+
+    surface[13] = SDL_LoadBMP("8192.bmp");
+    texture[13] = SDL_CreateTextureFromSurface(renderer, surface[13]);
+
+    surface[14] = SDL_LoadBMP("16384.bmp");
+    texture[14] = SDL_CreateTextureFromSurface(renderer, surface[14]);
+
+    surface[15] = SDL_LoadBMP("32768.bmp");
+    texture[15] = SDL_CreateTextureFromSurface(renderer, surface[15]);
+
+    surface[16] = SDL_LoadBMP("65536.bmp");
+    texture[16] = SDL_CreateTextureFromSurface(renderer, surface[16]);
+
+    surface[17] = SDL_LoadBMP("131072.bmp");
+    texture[17] = SDL_CreateTextureFromSurface(renderer, surface[17]);
+
+    surface[18] = SDL_LoadBMP("startmenu.bmp");
+    texture[18] = SDL_CreateTextureFromSurface(renderer, surface[18]);
+
+    surface[19] = SDL_LoadBMP("end_game.bmp");
+    texture[19] = SDL_CreateTextureFromSurface(renderer, surface[19]);
+
+    surface[20] = SDL_LoadBMP("newgame_black.bmp");
+    texture[20] = SDL_CreateTextureFromSurface(renderer, surface[20]);
+
+    surface[21] = SDL_LoadBMP("newgame_red.bmp");
+    texture[21] = SDL_CreateTextureFromSurface(renderer, surface[21]);
 }
 
-int get_index_col(int j)
+void print_number(int n, int x, int y)
 {
-    int y = START_COL + STEP*j;
-    return y;
-}
-
-int get_index_row(int i)
-{
-    int x = START_ROW + STEP*i;
-    return x;
-}
-
-void print_number(int n, int x, int y, SDL_Texture* texture[TEXTURE_NUM], SDL_Renderer* &renderer)
-{
-    SDL_Rect dest = {x, y, 119, 119}; //the destination rect
     switch(n)
     {
         case 2:
-            SDL_RenderCopy(renderer, texture[1], NULL, &dest);
+            loadMedia(1, x, y);
             break;
         case 4:
-            SDL_RenderCopy(renderer, texture[2], NULL, &dest);
+            loadMedia(2, x, y);
             break;
         case 8:
-            SDL_RenderCopy(renderer, texture[3], NULL, &dest);
+            loadMedia(3, x, y);
             break;
         case 16:
-            SDL_RenderCopy(renderer, texture[4], NULL, &dest);
+            loadMedia(4, x, y);
             break;
         case 32:
-            SDL_RenderCopy(renderer, texture[5], NULL, &dest);
+            loadMedia(5, x, y);
             break;
         case 64:
-            SDL_RenderCopy(renderer, texture[6], NULL, &dest);
+            loadMedia(6, x, y);
             break;
         case 128:
-            SDL_RenderCopy(renderer, texture[7], NULL, &dest);
+            loadMedia(7, x, y);
             break;
         case 256:
-            SDL_RenderCopy(renderer, texture[8], NULL, &dest);
+            loadMedia(8, x, y);
             break;
         case 512:
-            SDL_RenderCopy(renderer, texture[9], NULL, &dest);
+            loadMedia(9, x, y);
             break;
         case 1024:
-            SDL_RenderCopy(renderer, texture[10], NULL, &dest);
+            loadMedia(10, x, y);
             break;
         case 2048:
-            SDL_RenderCopy(renderer, texture[11], NULL, &dest);
+            loadMedia(11, x, y);
             break;
         case 4096:
-            SDL_RenderCopy(renderer, texture[12], NULL, &dest);
+            loadMedia(12, x, y);
             break;
         case 8192:
-            SDL_RenderCopy(renderer, texture[13], NULL, &dest);
+            loadMedia(13, x, y);
             break;
         case 16384:
-            SDL_RenderCopy(renderer, texture[14], NULL, &dest);
+            loadMedia(14, x, y);
             break;
         case 32768:
-            SDL_RenderCopy(renderer, texture[15], NULL, &dest);
+            loadMedia(15, x, y);
             break;
         case 65536:
-            SDL_RenderCopy(renderer, texture[16], NULL, &dest);
+            loadMedia(16, x, y);
             break;
         case 131072:
-            SDL_RenderCopy(renderer, texture[17], NULL, &dest);
+            loadMedia(17, x, y);
             break;
         default:
             break;
     }
 }
 
-void new_game(BOARD board[NUM][NUM], bool &win_check, int &score, SDL_Renderer* &renderer, SDL_Texture* texture[TEXTURE_NUM], TTF_Font* font, SDL_Color color, int high_score)
+void new_game(bool &win_check, int &score, int &high_score)
 {
     //reset value
     for(int i = 0; i < NUM; i++)
@@ -368,14 +385,14 @@ void new_game(BOARD board[NUM][NUM], bool &win_check, int &score, SDL_Renderer* 
 	score = 0;
 
 	//generate new number
-    index_to_num(board);
-    index_to_num(board);
+    generate_new_number();
+    generate_new_number();
 
-    print_board(board, score, renderer, texture, font, color, high_score);
+    print_board(score, high_score);
     cout << "New Game\n";
 }
 
-INDEX random_position(BOARD board[NUM][NUM])
+void generate_new_number()
 {
     INDEX index;
     bool check = true; // this variable to check that the new position do not contain any number
@@ -388,21 +405,15 @@ INDEX random_position(BOARD board[NUM][NUM])
             check = false;
         }
     }
-    return index;
-}
-
-void index_to_num(BOARD board[NUM][NUM])
-{
-    INDEX a = random_position(board);
-    board[a.row][a.col].value = random_new_number();
-}
-
-int random_new_number()
-{
-    int n;
-    n = rand() % 10;
-    if(n == 0) return 4;
-    return 2;
+    int n = rand() % 10;
+    if(n == 0)
+    {
+        board[index.row][index.col].value = 4;
+    }
+    else
+    {
+        board[index.row][index.col].value = 2;
+    }
 }
 
 int move_event(SDL_Event &e)
@@ -431,18 +442,18 @@ int move_event(SDL_Event &e)
     return direction;
 }
 
-void print_board(BOARD board[NUM][NUM], int& score, SDL_Renderer* &renderer, SDL_Texture* texture[TEXTURE_NUM], TTF_Font* font, SDL_Color color,int high_score)
+void print_board(int& score, int &high_score)
 {
     cout << "PRINT BOARD\n";
     SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer,texture[0],NULL,NULL); //print the background
+    loadMedia(0,0,0); //print the background
 	for(int i = 0; i < NUM; i++)
 	{
 		for(int j = 0; j < NUM; j++)
 		{
 			if(board[i][j].value)
 			{
-				print_number(board[i][j].value, get_index_row(j), get_index_col(i), texture, renderer);
+				print_number(board[i][j].value, START_ROW + STEP*j, START_COL + STEP*i);
 				cout << setw(5) << board[i][j].value;
 			}
 			else
@@ -452,9 +463,10 @@ void print_board(BOARD board[NUM][NUM], int& score, SDL_Renderer* &renderer, SDL
 		}
 		cout << endl;
 	}
-	print_score(score, 330, 57, renderer, font, color);
+	SDL_RenderPresent(renderer);
+	print_score(score, 330, 57);
 	cout << "SCORE = " << score << endl;
-	print_score(high_score, 470, 57, renderer, font, color);
+	print_score(high_score, 470, 57);
 }
 
 bool inside(int a)
@@ -463,16 +475,27 @@ bool inside(int a)
     return false;
 }
 
-void move_num(SDL_Event &e, BOARD board[NUM][NUM], int& score, SDL_Renderer* &renderer, SDL_Texture* texture[TEXTURE_NUM], TTF_Font* font, SDL_Color color, int high_score)
+void move_num(SDL_Event &e, int& score, int& high_score)
 {
     int direction = move_event(e);
     bool check = true, add = false;
+    int startLine = 0, startColumn = 0, lineStep = 1, columnStep = 1;
+    if(direction == 0) //down
+    {
+        startLine = 3;
+        lineStep = -1;
+    }
+    if(direction == 1) //right
+    {
+        startColumn = 3;
+        columnStep = -1;
+    }
     while(check)
     {
         check = false;
-        for (int i = 0; i < NUM; i++)
+        for (int i = startLine; inside(i); i+= lineStep)
         {
-            for (int j = 0; j < NUM; j++)
+            for (int j = startColumn; inside(j); j+= columnStep)
             {
                 int nextI = i + dir_Row[direction]; //nextI && nextJ move to the next Row or Col
                 int nextJ = j + dir_Col[direction];
@@ -502,17 +525,17 @@ void move_num(SDL_Event &e, BOARD board[NUM][NUM], int& score, SDL_Renderer* &re
     }
     if(add)
     {
-        //print_board(board, score, renderer, texture);
-        index_to_num(board); //genderate new number
-       //DL_Delay(10);
-        print_board(board, score, renderer, texture, font, color, high_score);
+        generate_new_number(); //genderate new number
+        if(score >= high_score)
+        {
+            high_score = score;
+        }
+        print_board(score, high_score);
     }
-    reset_false(board);
+    reset_false();
 }
 
-
-
-void reset_false(BOARD board[NUM][NUM])
+void reset_false()
 {
     for (int i = 0; i < NUM; i++)
     {
@@ -523,22 +546,7 @@ void reset_false(BOARD board[NUM][NUM])
     }
 }
 
-bool full_board(BOARD board[NUM][NUM])
-{
-    for (int i = 0; i < NUM; i++)
-    {
-        for (int j = 0; j < NUM; j++)
-        {
-            if(!board[i][j].value)
-            {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-bool win(BOARD board[NUM][NUM])
+bool win()
 {
     for (int i = 0; i < NUM; i++)
     {
@@ -553,68 +561,57 @@ bool win(BOARD board[NUM][NUM])
     return false;
 }
 
-bool check_move_lose(BOARD board[NUM][NUM])
+bool lose()
 {
-    for(int i = 0; i < NUM; i++)
+    for (int i = 0; i < NUM; i++)
     {
-        for(int j = 0; j < NUM; j++)
+        for (int j = 0; j < NUM; j++)
         {
-            if(equal_num(i, j, board))
+            if(board[i][j].value == 0)
             {
                 return false;
+            }
+            int a, b, c, d, e, f;
+            a = i;
+            b = i + 1;
+            c = i - 1;
+            d = j;
+            e = j + 1;
+            f = j - 1;
+            if(inside(e))
+            {
+                if(board[a][e].value == board[a][d].value)
+                {
+                    return false;
+                }
+            }
+            if(inside(f))
+            {
+                if(board[a][f].value == board[a][d].value)
+                {
+                    return false;
+                }
+            }
+            if(inside(b))
+            {
+                if(board[b][d].value == board[a][d].value)
+                {
+                    return false;
+                }
+            }
+            if(inside(c))
+            {
+                if(board[c][d].value == board[a][d].value)
+                {
+                    return false;
+                }
             }
         }
     }
     return true;
 }
 
-bool lose(BOARD board[NUM][NUM])
-{
-    if(full_board(board) && check_move_lose(board)) return true;
-    return false;
-}
-
-bool equal_num(const int &i,const int &j, BOARD board[NUM][NUM])
-{
-    int a, b, c, d, e, f;
-    a = i;
-    b = i + 1;
-    c = i - 1;
-    d = j;
-    e = j + 1;
-    f = j - 1;
-    if(inside(e))
-    {
-        if(board[a][e].value == board[a][d].value)
-        {
-            return true;
-        }
-    }
-    if(inside(f))
-    {
-        if(board[a][f].value == board[a][d].value)
-        {
-            return true;
-        }
-    }
-    if(inside(b))
-    {
-        if(board[b][d].value == board[a][d].value)
-        {
-            return true;
-        }
-    }
-    if(inside(c))
-    {
-        if(board[c][d].value == board[a][d].value)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-void close(SDL_Renderer* & renderer, SDL_Window* &window)
+void close()
 {
 	//Free loaded image
 	SDL_DestroyRenderer(renderer);
@@ -629,40 +626,16 @@ void close(SDL_Renderer* & renderer, SDL_Window* &window)
 	text = NULL;*/
 
 	//Quit SDL subsystems
+	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
 }
 
-void waitUntilKeyPressed()
-{
-    SDL_Event e;
-    while(true)
-    {
-        if(SDL_WaitEvent(&e) != 0 && (e.type == SDL_KEYDOWN || e.type == SDL_QUIT)) //xac dinh su kien ban phim
-            return;
-        SDL_Delay(100);  //deday 100ms
-    }
-}
-
-/*void LoadFromRenderText()
-{
-    //Load from render text
-    SDL_Surface* textSurface = NULL;
-    textSurface = TTF_RenderText_Solid(font, "HNMT", color);
-    if(textSurface == NULL) cout << "textSurface error\n";
-    SDL_Texture *text = NULL;
-    text = SDL_CreateTextureFromSurface(renderer, textSurface);
-    if(text == NULL) cout << "text error\n";
-    SDL_Rect textRect = {50, 50, 50, 50};
-    SDL_RenderCopy(renderer, text, NULL, &textRect);
-    SDL_RenderPresent(renderer);
-    SDL_FreeSurface(textSurface);
-    textSurface = NULL;
-}*/
-
-void print_score(int& score, int x, int y, SDL_Renderer* &renderer, TTF_Font *font, SDL_Color color)
+void print_score(int& score, int x, int y)
 {
     string sscore = to_string(score);
+    SDL_Color color = {255, 255, 255, 255};
+    TTF_Font *font = TTF_OpenFont("Roboto-Black.ttf", 30);
 
     SDL_Surface* textSurface = NULL;
     textSurface = TTF_RenderText_Solid(font, sscore.c_str(), color);
@@ -672,7 +645,7 @@ void print_score(int& score, int x, int y, SDL_Renderer* &renderer, TTF_Font *fo
     text = SDL_CreateTextureFromSurface(renderer, textSurface);
     if(text == NULL) cout << "text error\n";
 
-    SDL_Rect textRect = {x, y, 40, 50};
+    SDL_Rect textRect = {x, y, textSurface->w, textSurface->h};
 
     SDL_RenderCopy(renderer, text, NULL, &textRect);
     SDL_RenderPresent(renderer);
@@ -680,40 +653,3 @@ void print_score(int& score, int x, int y, SDL_Renderer* &renderer, TTF_Font *fo
     SDL_FreeSurface(textSurface);
     textSurface = NULL;
 }
-
-                /*SDL_RenderCopy(renderer,texture[0],NULL,NULL);
-    SDL_RenderPresent(renderer);
-            while(true)
-            {
-                SDL_PumpEvents();
-                int x, y;
-                SDL_GetMouseState(&x,&y);
-                cout << x << ' ' <<y<< '\n';
-                SDL_Delay(1000);
-            }*/
-
-            	//MOUSE EVENT
-    /*while(!quit)
-    {
-        //SDL_RenderCopy(renderer,texture[18],NULL,NULL); //print the startmenu
-        while(SDL_PollEvent(&e))
-        {
-            if(e.type == SDL_QUIT)
-            {
-                quit = true;
-            }
-            else if(e.type == SDL_MOUSEBUTTONDOWN)
-            {
-                if(e.button.button == SDL_BUTTON_LEFT)
-                {
-                    SDL_RenderCopy(renderer,texture[18],NULL,NULL); //print the startmenu
-                    SDL_RenderPresent(renderer);
-                }
-                else if(e.button.button == SDL_BUTTON_RIGHT)
-                {
-                    SDL_RenderCopy(renderer,texture[19],NULL,NULL); //print the endmenu
-                    SDL_RenderPresent(renderer);
-                }
-            }
-        }
-    }*/
