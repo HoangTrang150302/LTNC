@@ -1,0 +1,47 @@
+# depslib dependency file v1.0
+1619081060 source:d:\ltnc\game_ltnc\2048_remake_2\main.cpp
+	<SDL.h>
+	<SDL_image.h>
+	<iostream>
+	<string>
+	<cstdlib>
+	<ctime>
+	<iomanip>
+	<SDL_ttf.h>
+	<fstream>
+
+1619338739 source:d:\ltnc\game_ltnc\2048_remake_4\main.cpp
+	<fstream>
+	"LButton.h"
+	"GRAPHIC.h"
+
+1619326864 source:d:\ltnc\game_ltnc\2048_remake_4\logic_game.cpp
+	<iostream>
+	<string>
+	<cstdlib>
+	"BOARD.h"
+
+1619254167 source:d:\ltnc\game_ltnc\2048_remake_4\lbutton.cpp
+	"LButton.h"
+
+1619254192 d:\ltnc\game_ltnc\2048_remake_4\lbutton.h
+	<SDL.h>
+
+1619254277 source:d:\ltnc\game_ltnc\2048_remake_4\board.cpp
+	"BOARD.h"
+
+1619254333 d:\ltnc\game_ltnc\2048_remake_4\board.h
+
+1619259120 d:\ltnc\game_ltnc\2048_remake_4\graphic.h
+	<SDL.h>
+	<SDL_image.h>
+	<iostream>
+	<string>
+	<iomanip>
+	<SDL_ttf.h>
+	<cmath>
+	"BOARD.h"
+
+1619258947 source:d:\ltnc\game_ltnc\2048_remake_4\graphic.cpp
+	"GRAPHIC.h"
+
