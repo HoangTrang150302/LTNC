@@ -1,0 +1,79 @@
+# depslib dependency file v1.0
+1619409275 source:d:\ltnc\game_ltnc\2048_remake_4\board.cpp
+	"BOARD.h"
+
+1619409275 d:\ltnc\game_ltnc\2048_remake_4\board.h
+
+1619412802 source:d:\ltnc\game_ltnc\2048_remake_4\lbutton.cpp
+	"LButton.h"
+
+1619412802 d:\ltnc\game_ltnc\2048_remake_4\lbutton.h
+	<SDL.h>
+
+1619338796 source:d:\ltnc\game_ltnc\2048_remake_4\logic_game.cpp
+	<iostream>
+	<string>
+	<cstdlib>
+	"BOARD.h"
+
+1619414130 source:d:\ltnc\game_ltnc\2048_remake_4\main.cpp
+	<fstream>
+	"LButton.h"
+	"GRAPHIC.h"
+
+1619414130 d:\ltnc\game_ltnc\2048_remake_4\graphic.h
+	<SDL.h>
+	<SDL_image.h>
+	<iostream>
+	<string>
+	<iomanip>
+	<SDL_ttf.h>
+	<cmath>
+	<vector>
+	"BOARD.h"
+
+1619414130 source:d:\ltnc\game_ltnc\2048_remake_4\graphic.cpp
+	"GRAPHIC.h"
+
+1619409275 source:d:\ltnc\game_ltnc\2048_remake_4 - copy\board.cpp
+	"BOARD.h"
+
+1619409275 d:\ltnc\game_ltnc\2048_remake_4 - copy\board.h
+
+1619438241 source:d:\ltnc\game_ltnc\2048_remake_4 - copy\graphic.cpp
+	"GRAPHIC.h"
+	"LButton.h"
+	"LOGIC_GAME.h"
+
+1619438241 d:\ltnc\game_ltnc\2048_remake_4 - copy\graphic.h
+	<SDL.h>
+	<SDL_image.h>
+	<iostream>
+	<string>
+	<iomanip>
+	<SDL_ttf.h>
+	<cmath>
+	<vector>
+	"LOGIC_GAME.h"
+
+1619412802 source:d:\ltnc\game_ltnc\2048_remake_4 - copy\lbutton.cpp
+	"LButton.h"
+
+1619412802 d:\ltnc\game_ltnc\2048_remake_4 - copy\lbutton.h
+	<SDL.h>
+
+1619438500 source:d:\ltnc\game_ltnc\2048_remake_4 - copy\logic_game.cpp
+	"LOGIC_GAME.h"
+	<iostream>
+	<string>
+	<cstdlib>
+
+1619438718 d:\ltnc\game_ltnc\2048_remake_4 - copy\logic_game.h
+	"BOARD.h"
+	"LButton.h"
+
+1619438015 source:d:\ltnc\game_ltnc\2048_remake_4 - copy\main.cpp
+	<fstream>
+	"GRAPHIC.h"
+	"LOGIC_GAME.h"
+
