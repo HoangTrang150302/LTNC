@@ -35,4 +35,5 @@ SOME MODIFICATIONS:
 - Show menu function, show button
 - Print score and high score
 - Play sound effect: when click any button the sound effect will be played
+- When the menu shown the music corresspond to that menu will be played
 - Load image to the screen
