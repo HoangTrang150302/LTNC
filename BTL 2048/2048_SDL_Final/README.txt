@@ -34,8 +34,9 @@ SOME MODIFICATIONS:
 - Add lose and win condition
 2. Game graphic: All the graphic functions are in LOGIC_GAME.h and LOGIC_GAME.cpp file
 - Update screen function
-- Show menu function, show button
+- Show menu function
 - Print score and high score
 - Play sound effect: when click any button the sound effect will be played
 - When the menu shown the music corresspond to that menu will be played
 - Load image to the screen
+- LButton class for button
