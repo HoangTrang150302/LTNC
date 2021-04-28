@@ -1,0 +1,43 @@
+# depslib dependency file v1.0
+1619409275 source:d:\ltnc\game_ltnc\2048_remake_6\board.cpp
+	"BOARD.h"
+
+1619409275 d:\ltnc\game_ltnc\2048_remake_6\board.h
+
+1619412802 source:d:\ltnc\game_ltnc\2048_remake_6\lbutton.cpp
+	"LButton.h"
+
+1619412802 d:\ltnc\game_ltnc\2048_remake_6\lbutton.h
+	<SDL.h>
+
+1619572731 source:d:\ltnc\game_ltnc\2048_remake_6\logic_game.cpp
+	"LOGIC_GAME.h"
+	<iostream>
+	<string>
+	<cstdlib>
+
+1619514576 d:\ltnc\game_ltnc\2048_remake_6\logic_game.h
+	"BOARD.h"
+	"LButton.h"
+
+1619517294 source:d:\ltnc\game_ltnc\2048_remake_6\main.cpp
+	<fstream>
+	"GRAPHIC.h"
+	"LOGIC_GAME.h"
+
+1619512166 d:\ltnc\game_ltnc\2048_remake_6\graphic.h
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<iostream>
+	<string>
+	<iomanip>
+	<SDL_ttf.h>
+	<cmath>
+	<vector>
+	"LOGIC_GAME.h"
+
+1619572731 source:d:\ltnc\game_ltnc\2048_remake_6\graphic.cpp
+	"GRAPHIC.h"
+	"LButton.h"
+
