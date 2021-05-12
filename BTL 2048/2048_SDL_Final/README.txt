@@ -3,9 +3,9 @@
 https://www.youtube.com/watch?v=tGWhk47ZIm4
 2. 2048 SDL
 https://lazyfoo.net/tutorials/SDL/index.php
-3. 2048 Load Image SDL
+3. 2048 SDL Load Image Functions
 https://bitbucket.org/thailamha/tictactoe/src/master/draw.cpp
-4. 2048 number Images
+4. Graphic: 2048 number Images
 https://github.com/melehean/2048-SDL/tree/master/2048_SDL/GRAFIKA
 5. Game sound effect
 https://www.epidemicsound.com/sound-effects/
