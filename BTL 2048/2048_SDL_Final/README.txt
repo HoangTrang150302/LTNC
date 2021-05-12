@@ -40,3 +40,4 @@ SOME MODIFICATIONS:
 - When the menu shown the music corresspond to that menu will be played
 - Load image to the screen
 - LButton class for button
+- Design start menu, main game background, win menu and lose menu
