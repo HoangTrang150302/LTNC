@@ -27,7 +27,6 @@ int main(int argc, char* argv[])
     cout << "HIGH SCORE: " << game.high_score << endl;
     high_score_file.close();
 
-    //unsigned int seed = static_cast<unsigned>(time(0));
 	srand(time(0));
 
 	//START MENU
@@ -62,17 +61,17 @@ int main(int argc, char* argv[])
                 }
                 else
                 {
-                    int direction = graphic.move_event();
-                    if(direction >= 0)
+                    int direction = graphic.move_event(); 
+                    if(direction >= 0) //check if the key press is arrow key or not
                     {
-                        if(game.move_num(direction))
+                        if(game.move_num(direction)) //check if it is possible to move numbers or not
                         {
                             game.generate_new_number(); //genderate new number
                             if(game.score >= game.high_score)
                             {
                                 game.high_score = game.score;
                             }
-                            graphic.update(game.NUM, game.board, game.score, game.high_score);
+                            graphic.update(game.NUM, game.board, game.score, game.high_score); //update screen
                         }
                     }
                 }
@@ -95,12 +94,12 @@ int main(int argc, char* argv[])
         }
     }
 
-	for(int i = 0; i < game.NUM; i++)
+    for(int i = 0; i < game.NUM; i++)
     {
-        delete *(game.board + i);
+        delete [] *(game.board + i);
     }
     delete game.board;
-	//Free resources and close SDL
-	graphic.close();
-	return 0;
+    //Free resources and close SDL
+    graphic.close();
+    return 0;
 }
