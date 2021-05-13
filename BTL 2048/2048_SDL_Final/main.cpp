@@ -42,6 +42,13 @@ int main(int argc, char* argv[])
             game.win_check = true;
 
             SDL_Delay(1000);
+
+            //OUTPUT HIGH SCORE
+            ofstream out_put_file;
+            out_put_file.open("high_score.txt", ofstream::trunc);
+            out_put_file << game.high_score;
+            out_put_file.close();
+
             //WIN MENU
             graphic.win_menu(game);
         }
@@ -61,13 +68,13 @@ int main(int argc, char* argv[])
                 }
                 else
                 {
-                    int direction = graphic.move_event(); 
+                    int direction = graphic.move_event();
                     if(direction >= 0) //check if the key press is arrow key or not
                     {
-                        if(game.move_num(direction)) //check if it is possible to move numbers or not
+                        if(game.move_num(direction))
                         {
                             game.generate_new_number(); //genderate new number
-                            if(game.score >= game.high_score)
+                            if(game.score >= game.high_score) //check if it is possible to move numbers or not
                             {
                                 game.high_score = game.score;
                             }
@@ -94,12 +101,12 @@ int main(int argc, char* argv[])
         }
     }
 
-    for(int i = 0; i < game.NUM; i++)
+	for(int i = 0; i < game.NUM; i++)
     {
         delete [] *(game.board + i);
     }
     delete game.board;
-    //Free resources and close SDL
-    graphic.close();
-    return 0;
+	//Free resources and close SDL
+	graphic.close();
+	return 0;
 }
